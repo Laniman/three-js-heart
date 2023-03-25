@@ -11,37 +11,25 @@ function createScene(): {
     60,
     window.innerWidth / window.innerHeight,
     1,
-    100
+    150
   );
   camera.position.z = 30;
   camera.position.y = 15;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setClearColor("green");
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  const sphere = new THREE.SphereGeometry(0.5, 16, 8);
   const color = 0xffffff;
-  const light1 = new THREE.PointLight(color, 1);
-  light1.add(
-    new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xff0040 }))
-  );
-  light1.position.set(10, 10, 10);
-  scene.add(light1);
-
-  const light2 = new THREE.PointLight(0x80ff80, 1);
-  light2.add(
-    new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0x80ff80 }))
-  );
-  light2.position.set(-15, 10, 0);
-  scene.add(light2);
-
-  const light3 = new THREE.PointLight(0xffaa00, 1);
-  light3.add(
-    new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xffaa00 }))
-  );
-  light3.position.set(10, 15, -5);
-  scene.add(light3);
+  const intensity = 1;
+  let z = 30;
+  [...Array(2)].forEach(() => {
+    const light = new THREE.SpotLight(color, intensity);
+    light.position.set(5, 10, z);
+    scene.add(light);
+    z = -z;
+  });
 
   return {
     scene,
@@ -154,7 +142,6 @@ function addWireFrameToMesh(mesh: THREE.Mesh, geometry: THREE.BufferGeometry) {
   const wireFrame = new THREE.WireframeGeometry(geometry);
   const lineMat = new THREE.LineBasicMaterial({
     color: 0x000000,
-    linewidth: 2,
   });
   const line = new THREE.LineSegments(wireFrame, lineMat);
   mesh.add(line);
