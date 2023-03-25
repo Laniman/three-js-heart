@@ -22,21 +22,21 @@ function createScene(): {
 
   const sphere = new THREE.SphereGeometry(0.5, 16, 8);
   const color = 0xffffff;
-  const light1 = new THREE.PointLight(color, 2);
+  const light1 = new THREE.PointLight(color, 1);
   light1.add(
     new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xff0040 }))
   );
   light1.position.set(10, 10, 10);
   scene.add(light1);
 
-  const light2 = new THREE.PointLight(0x80ff80, 2);
+  const light2 = new THREE.PointLight(0x80ff80, 1);
   light2.add(
     new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0x80ff80 }))
   );
   light2.position.set(-15, 10, 0);
   scene.add(light2);
 
-  const light3 = new THREE.PointLight(0xffaa00, 2);
+  const light3 = new THREE.PointLight(0xffaa00, 1);
   light3.add(
     new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xffaa00 }))
   );
@@ -225,10 +225,78 @@ function setControls(
   domElement: HTMLElement
 ): { controls: InstanceType<typeof OrbitControls> } {
   const controls = new OrbitControls(camera, domElement);
+  controls.minPolarAngle = Math.PI / 3;
+  controls.maxPolarAngle = (2 * Math.PI) / 3;
+  controls.minDistance = 20;
+  controls.maxDistance = 34;
   controls.update();
   return {
     controls,
   };
+}
+
+function createRoom(
+  scene: THREE.Scene,
+  options: { width: number; height: number; depth: number }
+) {
+  const { width, height, depth } = options;
+  const planeMaterial = new THREE.MeshPhongMaterial({
+    color: 0x241b61,
+    side: THREE.DoubleSide,
+  });
+
+  for (let i = 0; i < 6; i++) {
+    const geo = new THREE.PlaneGeometry(width, height, 2);
+    const rotationAngle: { axis: "X" | "Y" | "Z"; radiant: number } = {
+      axis: "X",
+      radiant: 0,
+    };
+    const translation = {
+      x: 0,
+      y: 0,
+      z: 0,
+    };
+
+    switch (i) {
+      case 0:
+        translation.z = -depth / 2;
+        break;
+      case 1:
+        rotationAngle.radiant = -Math.PI * 0.5;
+        rotationAngle.axis = "X";
+        translation.y = -height / 2;
+        break;
+      case 2:
+        rotationAngle.radiant = -Math.PI * 0.5;
+        rotationAngle.axis = "X";
+        translation.y = height / 2;
+        break;
+      case 3:
+        rotationAngle.radiant = -Math.PI * 0.5;
+        rotationAngle.axis = "Y";
+        translation.x = -width / 2;
+        break;
+      case 4:
+        rotationAngle.radiant = -Math.PI * 0.5;
+        rotationAngle.axis = "Y";
+        translation.x = width / 2;
+        break;
+      case 5:
+        translation.z = depth / 2;
+        break;
+      default:
+        break;
+    }
+    const plane = new THREE.Mesh(
+      geo[`rotate${rotationAngle.axis}`](rotationAngle.radiant).translate(
+        translation.x,
+        translation.y,
+        translation.z
+      ),
+      planeMaterial
+    );
+    scene.add(plane);
+  }
 }
 
 function init() {
@@ -238,6 +306,7 @@ function init() {
   const { geo, heartMesh } = createHearthMesh(vertices, trianglesIndexes);
 
   scene.add(heartMesh);
+  createRoom(scene, { width: 70, height: 70, depth: 70 });
   addWireFrameToMesh(heartMesh, geo);
 
   const { onMouseIntersection } = handleMouseIntersection(
