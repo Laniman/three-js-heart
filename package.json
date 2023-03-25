@@ -12,6 +12,7 @@
     "dev": "parcel index.html --open",
     "start": "npm run build && npm run dev",
     "prettier": "npx prettier --write .",
+    "check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -21,7 +22,9 @@
     "prettier": "2.8.6"
   },
   "dependencies": {
+    "@types/three": "^0.149.0",
     "normalize.css": "^8.0.1",
-    "three": "^0.150.1"
+    "three": "^0.150.1",
+    "typescript": "^5.0.2"
   }
 }

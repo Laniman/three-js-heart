@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-function createScene() {
+function createScene(): {
+  scene: THREE.Scene;
+  camera: THREE.Camera;
+  renderer: THREE.Renderer;
+} {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     60,
@@ -46,7 +50,10 @@ function createScene() {
   };
 }
 
-function useCoordinates() {
+function useCoordinates(): {
+  vertices: THREE.Vector3[];
+  trianglesIndexes: [number, number, number][];
+} {
   const vertices = [
     new THREE.Vector3(0, 0, 0), // point C
     new THREE.Vector3(0, 5, -1.5),
@@ -104,7 +111,7 @@ function useCoordinates() {
     [16, 14, 12],
     [16, 17, 14],
     [12, 14, 13],
-  ];
+  ] as [number, number, number][];
 
   return {
     vertices,
@@ -112,9 +119,16 @@ function useCoordinates() {
   };
 }
 
-function createHearthMesh(coordinatesList, trianglesIndexes) {
+function createHearthMesh(
+  coordinatesList: THREE.Vector3[],
+  trianglesIndexes: [number, number, number][]
+): {
+  geo: THREE.BufferGeometry;
+  material: THREE.Material;
+  heartMesh: THREE.Mesh;
+} {
   const geo = new THREE.BufferGeometry();
-  const vertices = [];
+  const vertices: THREE.Vector3[] = [];
   trianglesIndexes.forEach((triangle) => {
     vertices.push(
       coordinatesList[triangle[0]],
@@ -136,7 +150,7 @@ function createHearthMesh(coordinatesList, trianglesIndexes) {
   };
 }
 
-function addWireFrameToMesh(mesh, geometry) {
+function addWireFrameToMesh(mesh: THREE.Mesh, geometry: THREE.BufferGeometry) {
   const wireFrame = new THREE.WireframeGeometry(geometry);
   const lineMat = new THREE.LineBasicMaterial({
     color: 0x000000,
@@ -146,14 +160,22 @@ function addWireFrameToMesh(mesh, geometry) {
   mesh.add(line);
 }
 
-function handleMouseIntersection(camera, scene, meshUuid) {
+function handleMouseIntersection(
+  camera: THREE.Camera,
+  scene: THREE.Scene,
+  meshUuid: THREE.Mesh["uuid"]
+): { onMouseIntersection: (event: MouseEvent | TouchEvent) => void } {
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
 
-  function onMouseIntersection(event) {
-    const coordinatesObject = event.changedTouches
-      ? event.changedTouches[0]
-      : event;
+  function onMouseIntersection(event: MouseEvent | TouchEvent) {
+    let coordinatesObject;
+    if (event instanceof TouchEvent) {
+      coordinatesObject = event.changedTouches[0];
+    } else {
+      coordinatesObject = event;
+    }
+
     mouse.x = (coordinatesObject.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(coordinatesObject.clientY / window.innerHeight) * 2 + 1;
 
@@ -177,7 +199,7 @@ let startAnim = false;
 let scaleThreshold = false;
 const beatingIncrement = 0.008;
 
-function beatingAnimation(mesh) {
+function beatingAnimation(mesh: THREE.Mesh) {
   if (mesh.scale.x < 1.4 && !scaleThreshold) {
     mesh.scale.x += beatingIncrement * 2;
     mesh.scale.y += beatingIncrement * 2;
@@ -198,7 +220,10 @@ function beatingAnimation(mesh) {
   }
 }
 
-function setControls(camera, domElement) {
+function setControls(
+  camera: THREE.Camera,
+  domElement: HTMLElement
+): { controls: InstanceType<typeof OrbitControls> } {
   const controls = new OrbitControls(camera, domElement);
   controls.update();
   return {
